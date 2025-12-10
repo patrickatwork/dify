@@ -4,7 +4,9 @@ FROM python:3.12-slim-bookworm AS base
 WORKDIR /app/api
 
 # Install uv
-ENV UV_VERSION=0.8.9
+ENV UV_VERSION=0.9.8
+
+RUN python -m pip install --upgrade pip
 
 RUN pip install --no-cache-dir uv==${UV_VERSION}
 
@@ -16,6 +18,8 @@ FROM base AS packages
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends gcc g++ libc-dev libffi-dev libgmp-dev libmpfr-dev libmpc-dev
+
+RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY pyproject.toml uv.lock ./
@@ -46,6 +50,7 @@ WORKDIR /app/api
 
 RUN \
     apt-get update \
+    && apt-get upgrade -y \
     # Install dependencies
     && apt-get install -y --no-install-recommends \
         # basic environment
