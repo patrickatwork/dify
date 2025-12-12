@@ -13,7 +13,7 @@ dependencies = [
     "celery~=5.5.2",
     "chardet~=5.1.0",
     "flask~=3.1.2",
-    "flask-compress>=1.17,<1.18",
+    "flask-compress~=1.23",
     "flask-cors~=6.0.0",
     "flask-login~=0.6.3",
     "flask-migrate~=4.0.7",
@@ -79,7 +79,7 @@ dependencies = [
     "starlette==0.49.1",
     "tiktoken~=0.9.0",
     "transformers~=4.56.1",
-    "unstructured[docx,epub,md,ppt,pptx]~=0.16.1",
+    "unstructured[docx,epub,md,ppt,pptx]~=0.18.18",
     "yarl~=1.18.3",
     "webvtt-py~=0.5.1",
     "sseclient-py~=1.8.0",
@@ -91,6 +91,7 @@ dependencies = [
     "weaviate-client==4.17.0",
     "apscheduler>=3.11.0",
     "weave>=0.52.16",
+    "urllib3>=2.6.0",  # Fix CVE-2025-66471, CVE-2025-66418
 ]
 # Before adding new dependency, consider place it in
 # alphabet order (a-z) and suitable group.
@@ -101,6 +102,11 @@ packages = []
 [tool.uv]
 default-groups = ["storage", "tools", "vdb"]
 package = false
+
+# Override pdfminer-six version to fix CVE-2025-64512
+override-dependencies = [
+    "pdfminer-six==20251107",
+]
 
 [dependency-groups]
 
@@ -193,7 +199,7 @@ storage = [
 ############################################################
 # [ Tools ] dependency group
 ############################################################
-tools = ["cloudscraper~=1.2.71", "nltk~=3.9.1"]
+tools = ["cloudscraper~=1.2.71", "nltk~=3.9.1", "pdfminer-six==20251107", "pypdf>=6.4.0", "brotli~=1.2.0"]
 
 ############################################################
 # [ VDB ] dependency group
@@ -213,7 +219,7 @@ vdb = [
     "pgvector==0.2.5",
     "pymilvus~=2.5.0",
     "pymochow==2.2.9",
-    "pyobvector~=0.2.17",
+    "pyobvector~=0.2.19",
     "qdrant-client==1.9.0",
     "tablestore==6.3.7",
     "tcvectordb~=1.6.4",

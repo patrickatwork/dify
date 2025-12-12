@@ -4,15 +4,17 @@ FROM python:3.12-slim-bookworm AS base
 WORKDIR /app/api
 
 # Install uv
-ENV UV_VERSION=0.8.9
+ENV UV_VERSION=0.9.8
+
+RUN python -m pip install --upgrade pip
 
 RUN pip install --no-cache-dir uv==${UV_VERSION}
 
 
 FROM base AS packages
 
-# if you located in China, you can use aliyun mirror to speed up
-# RUN sed -i 's@deb.debian.org@mirrors.aliyun.com@g' /etc/apt/sources.list.d/debian.sources
+# Use USTC mirror with HTTPS for reliable package downloads
+RUN sed -i 's@http://deb.debian.org@https://mirrors.ustc.edu.cn@g' /etc/apt/sources.list.d/debian.sources
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -20,6 +22,8 @@ RUN apt-get update \
           g++ \
           # for building gmpy2
           libmpfr-dev libmpc-dev
+
+RUN apt-get update && apt-get upgrade -y && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
 COPY pyproject.toml uv.lock ./
@@ -48,12 +52,16 @@ ENV PYTHONIOENCODING=utf-8
 
 WORKDIR /app/api
 
+# Use USTC mirror with HTTPS for reliable package downloads
+RUN sed -i 's@http://deb.debian.org@https://mirrors.ustc.edu.cn@g' /etc/apt/sources.list.d/debian.sources
+
 RUN \
     apt-get update \
+    && apt-get upgrade -y \
     # Install dependencies
     && apt-get install -y --no-install-recommends \
         # basic environment
-        curl nodejs \
+        curl ca-certificates gnupg \
         # for gmpy2 \
         libgmp-dev libmpfr-dev libmpc-dev \
         # For Security
@@ -65,6 +73,11 @@ RUN \
         # install libmagic to support the use of python-magic guess MIMETYPE
         libmagic1 \
     && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 22.x (fixes undici CVEs)
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy Python environment and packages
